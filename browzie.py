@@ -28,8 +28,10 @@ class URL :
         if self.scheme == "https":
             ctx = ssl.create_default_context()
             s = ctx.wrap_socket(s, server_hostname=self.host)
-        request = f"GET {self.path} HTTP/1.0\r\n"
+        request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
+        request += "Connection: close\r\n"
+        request += "User-agent: something\r\n"
         request += "\r\n"
         s.send(request.encode('utf8'))
         response = s.makefile("r", encoding="utf8", newline="\r\n")
