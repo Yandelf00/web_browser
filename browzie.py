@@ -31,7 +31,7 @@ class URL :
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
         request += "Connection: close\r\n"
-        request += "User-agent: something\r\n"
+        request += "User-Agent: something\r\n"
         request += "\r\n"
         s.send(request.encode('utf8'))
         response = s.makefile("r", encoding="utf8", newline="\r\n")
