@@ -3,8 +3,14 @@ import ssl
 
 class URL : 
     def __init__(self, url):
+        if url[0][:4] == "data" :
+            directive = ' '.join(url)
+            self.scheme, directive= directive.split(":", 1)
+            directive, self.path = directive.split(",", 1)
+            return
+        schemes = ["http", "https", "file"]
         self.scheme, url = url.split("://", 1)
-        assert self.scheme in ["http", "https", "file"]
+        assert self.scheme in schemes
         if self.scheme == "file" : 
             self.path = 'C:' + url
             return 
@@ -70,15 +76,23 @@ def load(url):
     if url.scheme in ["http", "https"]:
         body = url.request()
         show(body)
-    if url.scheme == "file" : 
+    elif url.scheme == "file" : 
         f = open(url.path, 'r')
         print(f.read())
+    elif url.scheme == "data" :
+        body = url.path 
+        show(body)
 
 if __name__ == "__main__":
     import sys
     path = "file:///Users/surfa/OneDrive/Bureau/git_repos/web_browser/file_to_open.txt"
     if len(sys.argv) < 2 : 
         load(URL(path))
+    elif len(sys.argv) > 2 and sys.argv[1][:4]=="data": 
+        new_url = []
+        for el in sys.argv[1:] : 
+            new_url.append(el)
+        load(URL(new_url))
     else : 
         load(URL(sys.argv[1]))
 
