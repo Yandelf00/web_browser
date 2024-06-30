@@ -4,7 +4,10 @@ import ssl
 class URL : 
     def __init__(self, url):
         self.scheme, url = url.split("://", 1)
-        assert self.scheme in ["http", "https"] 
+        assert self.scheme in ["http", "https", "file"]
+        if self.scheme == "file" : 
+            self.path = 'C:' + url
+            return 
         if self.scheme == "http": 
             self.port = 80
         elif self.scheme == "https": 
@@ -64,12 +67,20 @@ def show(body):
 
 
 def load(url):
-    body = url.request()
-    show(body)
+    if url.scheme in ["http", "https"]:
+        body = url.request()
+        show(body)
+    if url.scheme == "file" : 
+        f = open(url.path, 'r')
+        print(f.read())
 
 if __name__ == "__main__":
     import sys
-    load(URL(sys.argv[1]))
+    path = "file:///Users/surfa/OneDrive/Bureau/git_repos/web_browser/file_to_open.txt"
+    if len(sys.argv) < 2 : 
+        load(URL(path))
+    else : 
+        load(URL(sys.argv[1]))
 
 
 
