@@ -4,10 +4,16 @@
 """
 
 
-variabletwo = "<div>sdlfkj &lt; qlskqdf &lt;div&gt;ljf</div>"
+variable = "view-source:http://example.org/"
 
-in_tag = False
+print(variable[:11])
+
+
+
+
+"""
 entity = False
+in_tag = False
 new_entity="&"
 for c in variabletwo:
     if c == "<" :
@@ -34,6 +40,7 @@ for c in variabletwo:
 
     elif not in_tag and not entity: 
             print(c, end="")
+"""
 
 
 
