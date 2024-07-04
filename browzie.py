@@ -63,13 +63,36 @@ class URL :
 
 def show(body): 
     in_tag = False
+    is_entity = True
+    the_entity = ""
     for c in body: 
         if c == "<" :
             in_tag = True
         elif c == ">" :
             in_tag = False
-        elif not in_tag : 
-            print(c, end="")
+        elif is_entity :
+            the_entity+= c
+            if len(the_entity) == 4:
+                if the_entity== "&lt;":
+                    print("<", end="") 
+                    is_entity = False
+                    the_entity = ""
+                elif the_entity == "&gt;":
+                    print(">", end="")
+                    is_entity = False
+                    the_entity = ""
+                else : 
+                    print(the_entity, end="")
+                    is_entity= False
+                    the_entity= ""
+        elif not in_tag and not is_entity: 
+            if c == "&":
+                is_entity = True
+                the_entity = "&"
+            else :
+                print(c, end="")
+    if len(the_entity)>0:
+        print(the_entity)
 
 
 def load(url):
@@ -78,7 +101,8 @@ def load(url):
         show(body)
     elif url.scheme == "file" : 
         f = open(url.path, 'r')
-        print(f.read())
+        body = f.read()
+        show(body)
     elif url.scheme == "data" :
         body = url.path 
         show(body)
