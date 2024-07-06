@@ -1,5 +1,6 @@
 import socket
 import ssl
+import certifi
 
 class URL : 
     def __init__(self, url):
@@ -8,15 +9,16 @@ class URL :
             self.scheme, directive= directive.split(":", 1)
             directive, self.path = directive.split(",", 1)
             return
-        schemes = ["http", "https", "file"]
+            
+        schemes = ["http", "https", "file", "view-source:http", "view-source:https"]
         self.scheme, url = url.split("://", 1)
         assert self.scheme in schemes
         if self.scheme == "file" : 
             self.path = 'C:' + url
             return 
-        if self.scheme == "http": 
+        if self.scheme == "http" or self.scheme == "view-source:http": 
             self.port = 80
-        elif self.scheme == "https": 
+        elif self.scheme == "https" or self.scheme == "view-source:https": 
             self.port = 443
         if '/' not in url : 
             url = url + '/'
@@ -34,8 +36,8 @@ class URL :
             proto= socket.IPPROTO_TCP
         )
         s.connect((self.host, self.port))
-        if self.scheme == "https":
-            ctx = ssl.create_default_context()
+        if self.scheme == "https" or self.scheme == "view-source:https":
+            ctx = ssl.create_default_context(cafile=certifi.where())
             s = ctx.wrap_socket(s, server_hostname=self.host)
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
@@ -99,6 +101,9 @@ def load(url):
     if url.scheme in ["http", "https"]:
         body = url.request()
         show(body)
+    elif url.scheme in ["view-source:http","view-source:https"]:
+        body = url.request()
+        print(body)
     elif url.scheme == "file" : 
         f = open(url.path, 'r')
         body = f.read()
