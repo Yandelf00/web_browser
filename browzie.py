@@ -27,9 +27,9 @@ class URL :
         if ":" in self.host : 
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
+        self.socket = None
         
-
-    def request(self) : 
+    def connect_socket(self):
         s = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM,
@@ -39,13 +39,18 @@ class URL :
         if self.scheme == "https" or self.scheme == "view-source:https":
             ctx = ssl.create_default_context(cafile=certifi.where())
             s = ctx.wrap_socket(s, server_hostname=self.host)
+        return s
+
+    def request(self) : 
+        if self.socket is None : 
+            self.socket = self.connect_socket()
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
-        request += "Connection: close\r\n"
+        request += "Connection: keep-alive\r\n"
         request += "User-Agent: something\r\n"
         request += "\r\n"
-        s.send(request.encode('utf8'))
-        response = s.makefile("r", encoding="utf8", newline="\r\n")
+        self.socket.send(request.encode('utf8'))
+        response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
         statusline = response.readline()
         version, status, explanation = statusline.split(" ", 2)
         response_headers = {}
@@ -54,12 +59,10 @@ class URL :
             if line == "\r\n" : break
             header, value = line.split(':', 1)
             response_headers[header.casefold()] = value.strip()
-
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
-        content = response.read()
-        s.close()
-
+        content_length = int(response_headers.get("content-length", 0))
+        content = response.read(content_length)
         return content
 
 
