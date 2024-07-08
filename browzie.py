@@ -44,6 +44,8 @@ class URL :
     def request(self) : 
         if self.socket is None : 
             self.socket = self.connect_socket()
+        print(self.path)
+        print(self.host)
         request = f"GET {self.path} HTTP/1.1\r\n"
         request += f"Host: {self.host}\r\n"
         request += "Connection: keep-alive\r\n"
@@ -61,14 +63,18 @@ class URL :
             response_headers[header.casefold()] = value.strip()
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
-        content_length = int(response_headers.get("content-length", 0))
-        content = response.read(content_length)
-        return content
+        status = int(status)
+        if status >= 300 and status < 400 :
+            print(response_headers.get('location'))
+        else :   
+            content_length = int(response_headers.get("content-length", 0))
+            content = response.read(content_length)
+            return content
 
 
 def show(body): 
     in_tag = False
-    is_entity = True
+    is_entity =  False
     the_entity = ""
     for c in body: 
         if c == "<" :
@@ -103,17 +109,29 @@ def show(body):
 def load(url):
     if url.scheme in ["http", "https"]:
         body = url.request()
-        show(body)
+        if body is not None :
+            show(body)
+        else : 
+            print("there is no body to show")
     elif url.scheme in ["view-source:http","view-source:https"]:
         body = url.request()
-        print(body)
+        if body is not None:
+            print(body)
+        else:
+            print("there is no body to show")
     elif url.scheme == "file" : 
         f = open(url.path, 'r')
         body = f.read()
-        show(body)
+        if body is not None:
+            show(body)
+        else:
+            print("there is no body to show")
     elif url.scheme == "data" :
         body = url.path 
-        show(body)
+        if body is not None:
+            show(body)
+        else:
+            print("there is no body to show")
 
 if __name__ == "__main__":
     import sys
