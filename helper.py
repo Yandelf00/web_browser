@@ -4,10 +4,7 @@
 """
 
 
-variable = "view-source:http://example.org/"
-
-print(variable[:11])
-
+variable = "idk whats going on"
 
 
 

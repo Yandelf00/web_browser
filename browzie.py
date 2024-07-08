@@ -41,36 +41,51 @@ class URL :
             s = ctx.wrap_socket(s, server_hostname=self.host)
         return s
 
-    def request(self) : 
-        if self.socket is None : 
-            self.socket = self.connect_socket()
-        print(self.path)
-        print(self.host)
-        request = f"GET {self.path} HTTP/1.1\r\n"
-        request += f"Host: {self.host}\r\n"
+    def request_form(self, path, host):
+        request = f"GET {path} HTTP/1.1\r\n"
+        request += f"Host: {host}\r\n"
         request += "Connection: keep-alive\r\n"
         request += "User-Agent: something\r\n"
         request += "\r\n"
-        self.socket.send(request.encode('utf8'))
-        response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
-        statusline = response.readline()
-        version, status, explanation = statusline.split(" ", 2)
+        return request
+
+    def define_headers(self, response):
         response_headers = {}
         while True : 
             line = response.readline()
             if line == "\r\n" : break
             header, value = line.split(':', 1)
             response_headers[header.casefold()] = value.strip()
-        assert "transfer-encoding" not in response_headers
-        assert "content-encoding" not in response_headers
-        status = int(status)
-        if status >= 300 and status < 400 :
-            print(response_headers.get('location'))
-        else :   
-            content_length = int(response_headers.get("content-length", 0))
-            content = response.read(content_length)
-            return content
+        return response_headers
+    
+    def request(self, max_redirects = 10) : 
+        redirects_followed = 0 
+        while redirects_followed < max_redirects : 
+            if self.socket is None : 
+                self.socket = self.connect_socket()
+            request = self.request_form(self.path, self.host)
+            self.socket.send(request.encode('utf8'))
+            response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
+            statusline = response.readline()
+            version, status, explanation = statusline.split(" ", 2)
+            response_headers = self.define_headers(response) 
+            assert "transfer-encoding" not in response_headers
+            assert "content-encoding" not in response_headers
+            status = int(status)
 
+            if status >= 300 and status < 400 :
+                location = response_headers.get("location")
+                if location.startswith('/'):
+                    self.path = location
+                else : 
+                    self.__init__(location)
+                    self.socket = self.connect_socket()
+                redirects_followed += 1               
+            else :   
+                content_length = int(response_headers.get("content-length", 0))
+                content = response.read(content_length)
+                return content
+        raise Exception("too many redirects")
 
 def show(body): 
     in_tag = False
