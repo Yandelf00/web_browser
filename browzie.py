@@ -143,18 +143,6 @@ class URL :
             max_age = self.is_cacheable(response_headers)
             if max_age is not None :
                 URL.cache.set_cache(self.path, max_age, content) 
-                """
-                    content_length = int(response_headers.get("content-length", 0))
-                    content = response.read(content_length)
-                    if response_headers.get('content-encoding')=='gzip':
-                        content = gzip.decompress(content)
-
-                    max_age = self.is_cacheable(response_headers)
-                    if max_age is not None :
-                        URL.cache.set_cache(self.path, max_age, content) 
-
-                    return content
-                """
             return content
         raise Exception("too many redirects")
 
@@ -233,6 +221,24 @@ if __name__ == "__main__":
         load(URL(new_url))
     else : 
         load(URL(sys.argv[1]))
+
+
+
+
+
+"""
+    content_length = int(response_headers.get("content-length", 0))
+    content = response.read(content_length)
+    if response_headers.get('content-encoding')=='gzip':
+        content = gzip.decompress(content)
+
+    max_age = self.is_cacheable(response_headers)
+    if max_age is not None :
+        URL.cache.set_cache(self.path, max_age, content) 
+
+    return content
+"""
+
 
 
 
