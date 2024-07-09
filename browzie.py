@@ -2,6 +2,7 @@ import socket
 import ssl
 import certifi
 import time
+import gzip
 
 
 class Cache : 
@@ -66,13 +67,14 @@ class URL :
         request += f"Host: {host}\r\n"
         request += "Connection: keep-alive\r\n"
         request += "User-Agent: something\r\n"
+        request += "Accept-Encoding: gzip\r\n"
         request += "\r\n"
         return request
 
     def define_headers(self, response):
         response_headers = {}
         while True : 
-            line = response.readline()
+            line = response.readline().decode("utf8")
             if line == "\r\n" : break
             header, value = line.split(':', 1)
             response_headers[header.casefold()] = value.strip()
@@ -90,6 +92,18 @@ class URL :
                     return int(max_age)
         return None
 
+    def read_chunked(self, response):
+        body = b""
+        while True:
+            chunk_size_line = response.readline().strip()
+            chunk_size = int(chunk_size_line, 16)
+            if chunk_size == 0:
+                break
+            chunk = response.read(chunk_size)
+            body += chunk
+            response.readline()  # Read the trailing \r\n
+        return body
+
     def request(self, max_redirects = 10) : 
         cached_content = URL.cache.get_cache(self.path)
         if cached_content : 
@@ -101,12 +115,10 @@ class URL :
                 self.socket = self.connect_socket()
             request = self.request_form(self.path, self.host)
             self.socket.send(request.encode('utf8'))
-            response = self.socket.makefile("r", encoding="utf8", newline="\r\n")
-            statusline = response.readline()
+            response = self.socket.makefile("rb", newline="\r\n")
+            statusline = response.readline().decode('utf8')
             version, status, explanation = statusline.split(" ", 2)
             response_headers = self.define_headers(response) 
-            assert "transfer-encoding" not in response_headers
-            assert "content-encoding" not in response_headers
             status = int(status)
 
             if status >= 300 and status < 400 :
@@ -117,17 +129,38 @@ class URL :
                     self.__init__(location)
                     self.socket = self.connect_socket()
                 redirects_followed += 1               
-            else :   
+                continue
+            if response_headers.get('transfert-encoding') == 'chunked':
+                content = self.read_chunked(response)
+            else : 
                 content_length = int(response_headers.get("content-length", 0))
                 content = response.read(content_length)
-                max_age = self.is_cacheable(response_headers)
-                if max_age is not None :
-                    URL.cache.set_cache(self.path, max_age, content) 
+            
+            if response_headers.get("content-encoding") == "gzip":
+                content = gzip.decompress(content)
 
-                return content
+
+            max_age = self.is_cacheable(response_headers)
+            if max_age is not None :
+                URL.cache.set_cache(self.path, max_age, content) 
+                """
+                    content_length = int(response_headers.get("content-length", 0))
+                    content = response.read(content_length)
+                    if response_headers.get('content-encoding')=='gzip':
+                        content = gzip.decompress(content)
+
+                    max_age = self.is_cacheable(response_headers)
+                    if max_age is not None :
+                        URL.cache.set_cache(self.path, max_age, content) 
+
+                    return content
+                """
+            return content
         raise Exception("too many redirects")
 
 def show(body): 
+    if type(body)!= str:
+        body = body.decode("utf8")
     in_tag = False
     is_entity =  False
     the_entity = ""
@@ -171,7 +204,7 @@ def load(url):
     elif url.scheme in ["view-source:http","view-source:https"]:
         body = url.request()
         if body is not None:
-            print(body)
+            print(body.decode("utf8"))
         else:
             print("there is no body to show")
     elif url.scheme == "file" : 
