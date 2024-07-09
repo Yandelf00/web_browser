@@ -1,11 +1,15 @@
+import time
 """
     variable = ["browzie.py", "data:/idk mlsd" ,"dslmj"]
     print(variable[1:])
 """
 
 
-variable = "idk whats going on"
+cache_control = "public, max-age=14400"
 
+directives = [d.strip() for d in cache_control.split(",")]
+
+print(directives)
 
 
 """

@@ -1,8 +1,28 @@
 import socket
 import ssl
 import certifi
+import time
+
+
+class Cache : 
+    def __init__(self) :
+        self.cache = {}  
+    
+    def set_cache(self, url, max_age, content):
+        self.cache[url] = {
+            "content" : content,
+            "expires" : time.time() + float(max_age)
+        }
+    
+    def get_cache(self, url) :
+        entry = self.cache.get(url)
+        if entry and entry['expires'] > time.time():
+            return entry['content'] 
+        return None
 
 class URL : 
+    cache = Cache()
+
     def __init__(self, url):
         if url[0][:4] == "data" :
             directive = ' '.join(url)
@@ -58,7 +78,23 @@ class URL :
             response_headers[header.casefold()] = value.strip()
         return response_headers
     
+    def is_cacheable(self, response_headers) :
+        cache_control = response_headers.get('cache-control')
+        if cache_control :
+            directives = [d.strip() for d in cache_control.split(",")]
+            for directive in directives :
+                if directive == "no-store":
+                    return None 
+                if directive.startswith("max-age"):
+                    _, max_age = directive.split('=')
+                    return int(max_age)
+        return None
+
     def request(self, max_redirects = 10) : 
+        cached_content = URL.cache.get_cache(self.path)
+        if cached_content : 
+            return cached_content
+
         redirects_followed = 0 
         while redirects_followed < max_redirects : 
             if self.socket is None : 
@@ -84,6 +120,10 @@ class URL :
             else :   
                 content_length = int(response_headers.get("content-length", 0))
                 content = response.read(content_length)
+                max_age = self.is_cacheable(response_headers)
+                if max_age is not None :
+                    URL.cache.set_cache(self.path, max_age, content) 
+
                 return content
         raise Exception("too many redirects")
 
