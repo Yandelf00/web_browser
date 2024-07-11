@@ -3,7 +3,9 @@ import ssl
 import certifi
 import time
 import gzip
+import tkinter
 
+WIDTH, HEIGHT = 800, 600
 
 class Cache : 
     def __init__(self) :
@@ -182,46 +184,62 @@ def show(body):
         print(the_entity)
 
 
-def load(url):
-    if url.scheme in ["http", "https"]:
-        body = url.request()
-        if body is not None :
-            show(body)
-        else : 
-            print("there is no body to show")
-    elif url.scheme in ["view-source:http","view-source:https"]:
-        body = url.request()
-        if body is not None:
-            print(body.decode("utf8"))
-        else:
-            print("there is no body to show")
-    elif url.scheme == "file" : 
-        f = open(url.path, 'r')
-        body = f.read()
-        if body is not None:
-            show(body)
-        else:
-            print("there is no body to show")
-    elif url.scheme == "data" :
-        body = url.path 
-        if body is not None:
-            show(body)
-        else:
-            print("there is no body to show")
+
+
+class Browser : 
+    def __init__(self):
+        self.window = tkinter.Tk()
+        self.canvas = tkinter.Canvas(
+            self.window,
+            width=WIDTH,
+            height=HEIGHT
+        )
+        self.canvas.pack()
+
+    def load(self, url):
+        if url.scheme in ["http", "https"]:
+            body = url.request()
+            if body is not None :
+                show(body)
+            else : 
+                print("there is no body to show")
+        elif url.scheme in ["view-source:http","view-source:https"]:
+            body = url.request()
+            if body is not None:
+                print(body.decode("utf8"))
+            else:
+                print("there is no body to show")
+        elif url.scheme == "file" : 
+            f = open(url.path, 'r')
+            body = f.read()
+            if body is not None:
+                show(body)
+            else:
+                print("there is no body to show")
+        elif url.scheme == "data" :
+            body = url.path 
+            if body is not None:
+                show(body)
+            else:
+                print("there is no body to show")
+        self.canvas.create_rectangle(10, 20, 400, 300)
+        self.canvas.create_oval(100, 100, 150, 150)
+        self.canvas.create_text(200, 150, text="Hi!")
 
 if __name__ == "__main__":
     import sys
     path = "file:///Users/surfa/OneDrive/Bureau/git_repos/web_browser/file_to_open.txt"
     if len(sys.argv) < 2 : 
-        load(URL(path))
+        Browser().load(URL(path))
     elif len(sys.argv) > 2 and sys.argv[1][:4]=="data": 
         new_url = []
-        for el in sys.argv[1:] : 
+        for el in sys.argv[1:]: 
             new_url.append(el)
-        load(URL(new_url))
+        Browser().load(URL(new_url))
     else : 
-        load(URL(sys.argv[1]))
+        Browser().load(URL(sys.argv[1]))
 
+    tkinter.mainloop()
 
 
 
