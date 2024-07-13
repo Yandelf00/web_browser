@@ -3,6 +3,9 @@ import time
     variable = ["browzie.py", "data:/idk mlsd" ,"dslmj"]
     print(variable[1:])
 """
+"""
+C:\Users\surfa\AppData\Local\Programs\Python\Python311\python.exe browzie.py http://example.org/
+"""
 
 
 cache_control = "public, max-age=14400"

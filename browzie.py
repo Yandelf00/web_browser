@@ -121,6 +121,7 @@ class URL :
             statusline = response.readline().decode('utf8')
             version, status, explanation = statusline.split(" ", 2)
             response_headers = self.define_headers(response) 
+            print(response_headers)
             status = int(status)
 
             if status >= 300 and status < 400 :
@@ -132,7 +133,7 @@ class URL :
                     self.socket = self.connect_socket()
                 redirects_followed += 1               
                 continue
-            if response_headers.get('transfert-encoding') == 'chunked':
+            if response_headers.get('transfer-encoding') == 'chunked':
                 content = self.read_chunked(response)
             else : 
                 content_length = int(response_headers.get("content-length", 0))
