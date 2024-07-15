@@ -6,6 +6,9 @@ import gzip
 import tkinter
 
 WIDTH, HEIGHT = 800, 600
+HSTEP, VSTEP = 13, 18
+SCROLL_STEP = 100
+
 
 class Cache : 
     def __init__(self) :
@@ -121,7 +124,6 @@ class URL :
             statusline = response.readline().decode('utf8')
             version, status, explanation = statusline.split(" ", 2)
             response_headers = self.define_headers(response) 
-            print(response_headers)
             status = int(status)
 
             if status >= 300 and status < 400 :
@@ -149,9 +151,11 @@ class URL :
             return content
         raise Exception("too many redirects")
 
-def show(body): 
+def lex(body): 
     if type(body)!= str:
         body = body.decode("utf8")
+    
+    text = ""
     in_tag = False
     is_entity =  False
     the_entity = ""
@@ -164,15 +168,15 @@ def show(body):
             the_entity+= c
             if len(the_entity) == 4:
                 if the_entity== "&lt;":
-                    print("<", end="") 
+                    text += "<"
                     is_entity = False
                     the_entity = ""
                 elif the_entity == "&gt;":
-                    print(">", end="")
+                    text += ">"
                     is_entity = False
                     the_entity = ""
                 else : 
-                    print(the_entity, end="")
+                    text += the_entity
                     is_entity= False
                     the_entity= ""
         elif not in_tag and not is_entity: 
@@ -180,12 +184,23 @@ def show(body):
                 is_entity = True
                 the_entity = "&"
             else :
-                print(c, end="")
+                text += c
     if len(the_entity)>0:
-        print(the_entity)
+        text += the_entity
+
+    return text
 
 
-
+def layout(text):
+    display_list = []
+    cursor_x, cursor_y = HSTEP, VSTEP
+    for c in text : 
+        display_list.append((cursor_x, cursor_y, c))
+        cursor_x += HSTEP
+        if cursor_x > WIDTH - HSTEP:
+            cursor_y += VSTEP 
+            cursor_x = HSTEP
+    return display_list 
 
 class Browser : 
     def __init__(self):
@@ -196,12 +211,16 @@ class Browser :
             height=HEIGHT
         )
         self.canvas.pack()
+        self.scroll = 0
+        self.window.bind("<Down>", self.scrolldown)
 
     def load(self, url):
         if url.scheme in ["http", "https"]:
             body = url.request()
             if body is not None :
-                show(body)
+                text = lex(body)
+                self.display_list = layout(text)
+                self.draw()
             else : 
                 print("there is no body to show")
         elif url.scheme in ["view-source:http","view-source:https"]:
@@ -214,18 +233,27 @@ class Browser :
             f = open(url.path, 'r')
             body = f.read()
             if body is not None:
-                show(body)
+                print(lex(body))
             else:
                 print("there is no body to show")
         elif url.scheme == "data" :
             body = url.path 
             if body is not None:
-                show(body)
+                print(lex(body))
             else:
                 print("there is no body to show")
-        self.canvas.create_rectangle(10, 20, 400, 300)
-        self.canvas.create_oval(100, 100, 150, 150)
-        self.canvas.create_text(200, 150, text="Hi!")
+    
+    def draw(self):
+        self.canvas.delete("all")
+        for x, y, c in self.display_list:
+            if y > self.scroll + HEIGHT : continue
+            if y + VSTEP < self.scroll : continue
+            self.canvas.create_text(x, y - self.scroll, text=c)
+
+    def scrolldown(self, e) : 
+        self.scroll += SCROLL_STEP
+        self.draw()
+
 
 if __name__ == "__main__":
     import sys
