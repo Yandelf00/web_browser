@@ -7,6 +7,7 @@ import tkinter
 
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
+NLINE = 22
 SCROLL_STEP = 100
 
 
@@ -200,6 +201,9 @@ def layout(text):
         if cursor_x > WIDTH - HSTEP:
             cursor_y += VSTEP 
             cursor_x = HSTEP
+        if c == '\n' : 
+            cursor_x = HSTEP
+            cursor_y += NLINE 
     return display_list 
 
 class Browser : 
