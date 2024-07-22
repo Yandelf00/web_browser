@@ -218,6 +218,7 @@ class Browser :
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
+        self.window.bind("<MouseWheel>", self.mousewheel)
 
     def load(self, url):
         if url.scheme in ["http", "https"]:
@@ -263,6 +264,15 @@ class Browser :
         if self.scroll > 0 :
             self.scroll -= SCROLL_STEP
             self.draw()
+
+    def mousewheel(self, e):
+        if e.num == 5 or e.delta == -120 : 
+            self.scroll += SCROLL_STEP
+            self.draw()
+        if e.num == 4 or e.delta == 120 : 
+            if self.scroll > 0 :
+                self.scroll -= SCROLL_STEP
+                self.draw()
 
 
 if __name__ == "__main__":
