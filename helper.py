@@ -4,7 +4,7 @@ import time
     print(variable[1:])
 """
 """
-C:\Users\surfa\AppData\Local\Programs\Python\Python311\python.exe browzie.py http://example.org/
+C:\Users\surfa\AppData\Local\Programs\Python\Python311\python.exe browzie.py https://browser.engineering/examples/xiyouji.html
 """
 
 

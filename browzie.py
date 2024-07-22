@@ -217,6 +217,7 @@ class Browser :
         self.canvas.pack()
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Up>", self.scrollup)
 
     def load(self, url):
         if url.scheme in ["http", "https"]:
@@ -257,6 +258,11 @@ class Browser :
     def scrolldown(self, e) : 
         self.scroll += SCROLL_STEP
         self.draw()
+    
+    def scrollup(self, e):
+        if self.scroll > 0 :
+            self.scroll -= SCROLL_STEP
+            self.draw()
 
 
 if __name__ == "__main__":
