@@ -192,13 +192,13 @@ def lex(body):
     return text
 
 
-def layout(text):
+def layout(text, width=WIDTH):
     display_list = []
     cursor_x, cursor_y = HSTEP, VSTEP
     for c in text : 
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
-        if cursor_x > WIDTH - HSTEP: 
+        if cursor_x > width - HSTEP: 
             cursor_y += VSTEP 
             cursor_x = HSTEP
         if c == '\n' : 
@@ -225,8 +225,8 @@ class Browser :
         if url.scheme in ["http", "https"]:
             body = url.request()
             if body is not None :
-                text = lex(body)
-                self.display_list = layout(text)
+                self.text = lex(body)
+                self.display_list = layout(self.text)
                 self.draw()
             else : 
                 print("there is no body to show")
@@ -250,35 +250,40 @@ class Browser :
             else:
                 print("there is no body to show")
     
-    def draw(self):
+    def draw(self, height=HEIGHT):
         self.canvas.delete("all")
         for x, y, c in self.display_list:
-            if y > self.scroll + HEIGHT : continue
+            if y > self.scroll + height: continue
             if y + VSTEP < self.scroll : continue
             self.canvas.create_text(x, y - self.scroll, text=c)
 
     def scrolldown(self, e) : 
+        cur_height = self.canvas.winfo_height()
         self.scroll += SCROLL_STEP
-        self.draw()
+        self.draw(cur_height)
     
     def scrollup(self, e):
+        cur_height = self.canvas.winfo_height()
         if self.scroll > 0 :
             self.scroll -= SCROLL_STEP
-            self.draw()
+            self.draw(cur_height)
 
     def mousewheel(self, e):
+        cur_height = self.canvas.winfo_height()
         if e.num == 5 or e.delta == -120 : 
             self.scroll += SCROLL_STEP
-            self.draw()
+            self.draw(cur_height)
         if e.num == 4 or e.delta == 120 : 
             if self.scroll > 0 :
                 self.scroll -= SCROLL_STEP
-                self.draw()
-    
+                self.draw(cur_height)
+
     def on_configure(self, e):
         new_width = e.width
         new_height = e.height
-        layout()
+        self.display_list = layout(self.text, new_width)
+        self.draw(new_height)
+
 
 if __name__ == "__main__":
     import sys
