@@ -198,7 +198,7 @@ def layout(text):
     for c in text : 
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
-        if cursor_x > WIDTH - HSTEP:
+        if cursor_x > WIDTH - HSTEP: 
             cursor_y += VSTEP 
             cursor_x = HSTEP
         if c == '\n' : 
@@ -214,11 +214,12 @@ class Browser :
             width=WIDTH,
             height=HEIGHT
         )
-        self.canvas.pack()
+        self.canvas.pack(fill="both", expand=1)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<MouseWheel>", self.mousewheel)
+        self.window.bind("<Configure>", self.on_configure)
 
     def load(self, url):
         if url.scheme in ["http", "https"]:
@@ -273,7 +274,11 @@ class Browser :
             if self.scroll > 0 :
                 self.scroll -= SCROLL_STEP
                 self.draw()
-
+    
+    def on_configure(self, e):
+        new_width = e.width
+        new_height = e.height
+        layout()
 
 if __name__ == "__main__":
     import sys
