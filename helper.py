@@ -5,6 +5,7 @@ import time
 """
 """
 C:\Users\surfa\AppData\Local\Programs\Python\Python311\python.exe browzie.py https://browser.engineering/examples/xiyouji.html
+C:\Users\surfa\AppData\Local\Programs\Python\Python311\python.exe browzie.py https://browzie-test-68pi.vercel.app/
 """
 
 

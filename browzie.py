@@ -4,6 +4,7 @@ import certifi
 import time
 import gzip
 import tkinter
+from tkinter import Scrollbar
 
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
@@ -209,11 +210,13 @@ def layout(text, width=WIDTH):
 class Browser : 
     def __init__(self):
         self.window = tkinter.Tk()
+        self.scrollbar = Scrollbar(self.window)
         self.canvas = tkinter.Canvas(
             self.window,
             width=WIDTH,
-            height=HEIGHT
+            height=HEIGHT,
         )
+        self.scrollbar.pack(side="right", fill="y")
         self.canvas.pack(fill="both", expand=1)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
@@ -259,7 +262,8 @@ class Browser :
 
     def scrolldown(self, e) : 
         cur_height = self.canvas.winfo_height()
-        self.scroll += SCROLL_STEP
+        if self.scroll < cur_height : 
+            self.scroll += SCROLL_STEP
         self.draw(cur_height)
     
     def scrollup(self, e):
@@ -271,7 +275,8 @@ class Browser :
     def mousewheel(self, e):
         cur_height = self.canvas.winfo_height()
         if e.num == 5 or e.delta == -120 : 
-            self.scroll += SCROLL_STEP
+            if self.scroll < cur_height :
+                self.scroll += SCROLL_STEP
             self.draw(cur_height)
         if e.num == 4 or e.delta == 120 : 
             if self.scroll > 0 :
