@@ -64,3 +64,6 @@ f = open("C:/Users/surfa/OneDrive/Bureau/git_repos/web_browser/file_to_open.txt"
 
 print(f.read())
 """
+
+def printSmtg():
+    print("This is a test")
