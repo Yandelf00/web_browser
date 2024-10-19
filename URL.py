@@ -8,7 +8,8 @@ class URL :
     cache = Cache()
 
     def __init__(self, url):
-        if url[0][:4] == "data" :
+        
+        if url[0:4] == "data" :
             directive = ' '.join(url)
             self.scheme, directive= directive.split(":", 1)
             directive, self.path = directive.split(",", 1)
