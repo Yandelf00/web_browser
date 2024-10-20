@@ -45,7 +45,8 @@ class Browser :
         elif url.scheme == "data" :
             body = url.path 
             if body is not None:
-                print(lex(body))
+                self.text = lex(body)
+                print(self.text)
             else:
                 print("there is no body to show")
     
