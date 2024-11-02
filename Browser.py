@@ -59,9 +59,9 @@ class Browser :
 
     def scrolldown(self, e) : 
         cur_height = self.canvas.winfo_height()
-        if self.scroll < cur_height : 
+        if self.scroll + cur_height < self.display_list[-1][1]:
             self.scroll += SCROLL_STEP
-        self.draw(cur_height)
+            self.draw(cur_height)
     
     def scrollup(self, e):
         cur_height = self.canvas.winfo_height()
