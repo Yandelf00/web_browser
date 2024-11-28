@@ -1,18 +1,15 @@
 import tkinter
-from tkinter import Scrollbar
 from vars import HEIGHT, WIDTH, VSTEP, SCROLL_STEP
 from Ofunctions import lex, layout
 
 class Browser : 
     def __init__(self):
         self.window = tkinter.Tk()
-        self.scrollbar = Scrollbar(self.window)
         self.canvas = tkinter.Canvas(
             self.window,
             width=WIDTH,
             height=HEIGHT,
         )
-        self.scrollbar.pack(side="right", fill="y")
         self.canvas.pack(fill="both", expand=1)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
@@ -52,6 +49,9 @@ class Browser :
     
     def draw(self, height=HEIGHT):
         self.canvas.delete("all")
+        a = self.canvas.create_rectangle(50, 0, 100, 50, fill='red')
+        self.canvas.move(a, 20, 20)
+
         for x, y, c in self.display_list:
             if y > self.scroll + height: continue
             if y + VSTEP < self.scroll : continue
@@ -72,9 +72,9 @@ class Browser :
     def mousewheel(self, e):
         cur_height = self.canvas.winfo_height()
         if e.num == 5 or e.delta == -120 : 
-            if self.scroll < cur_height :
+            if self.scroll + cur_height < self.display_list[-1][1]:
                 self.scroll += SCROLL_STEP
-            self.draw(cur_height)
+                self.draw(cur_height)
         if e.num == 4 or e.delta == 120 : 
             if self.scroll > 0 :
                 self.scroll -= SCROLL_STEP
