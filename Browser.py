@@ -48,9 +48,13 @@ class Browser :
                 print("there is no body to show")
     
     def draw(self, height=HEIGHT):
+        """
+        Draws the canvas (what's inside the window)
+        """
+        cur_width= self.canvas.winfo_width()
         self.canvas.delete("all")
-        a = self.canvas.create_rectangle(50, 0, 100, 50, fill='red')
-        self.canvas.move(a, 20, 20)
+        a = self.canvas.create_rectangle(cur_width-10, 20, cur_width, 50, fill='blue')
+        self.canvas.move(a, 0, 0)
 
         for x, y, c in self.display_list:
             if y > self.scroll + height: continue
@@ -58,18 +62,27 @@ class Browser :
             self.canvas.create_text(x, y - self.scroll, text=c)
 
     def scrolldown(self, e) : 
+        """
+        Handles the scroll down behaviour (with the downside key)
+        """
         cur_height = self.canvas.winfo_height()
         if self.scroll + cur_height < self.display_list[-1][1]:
             self.scroll += SCROLL_STEP
             self.draw(cur_height)
     
     def scrollup(self, e):
+        """
+        Handles the scroll up behaviour (with the upside key)
+        """
         cur_height = self.canvas.winfo_height()
         if self.scroll > 0 :
             self.scroll -= SCROLL_STEP
             self.draw(cur_height)
 
     def mousewheel(self, e):
+        """
+        Handles mousewheel scrolling for the canvas
+        """
         cur_height = self.canvas.winfo_height()
         if e.num == 5 or e.delta == -120 : 
             if self.scroll + cur_height < self.display_list[-1][1]:
@@ -81,6 +94,10 @@ class Browser :
                 self.draw(cur_height)
 
     def on_configure(self, e):
+        """
+        Reconfigures the content for when the sizes of 
+        the height or width of the window is changed.
+        """
         new_width = e.width
         new_height = e.height
         self.display_list = layout(self.text, new_width)
