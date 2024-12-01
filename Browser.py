@@ -1,5 +1,5 @@
 import tkinter
-from vars import HEIGHT, WIDTH, VSTEP, SCROLL_STEP
+from vars import HEIGHT, WIDTH, VSTEP, SCROLL_STEP, SIDE_STEP
 from Ofunctions import lex, layout
 
 class Browser : 
@@ -12,6 +12,7 @@ class Browser :
         )
         self.canvas.pack(fill="both", expand=1)
         self.scroll = 0
+        self.side_scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<MouseWheel>", self.mousewheel)
@@ -51,9 +52,13 @@ class Browser :
         """
         Draws the canvas (what's inside the window)
         """
-        cur_width= self.canvas.winfo_width()
+        cur_width = self.canvas.winfo_width()
+        cur_height =  self.canvas.winfo_height()
         self.canvas.delete("all")
-        a = self.canvas.create_rectangle(cur_width-10, 20, cur_width, 50, fill='blue')
+        x = self.display_list[-1][1] - cur_height
+        fact = x / SIDE_STEP
+        y = cur_height-fact
+        a = self.canvas.create_rectangle(cur_width-10, self.side_scroll, cur_width, y+self.side_scroll, fill='blue')
         self.canvas.move(a, 0, 0)
 
         for x, y, c in self.display_list:
@@ -68,6 +73,7 @@ class Browser :
         cur_height = self.canvas.winfo_height()
         if self.scroll + cur_height < self.display_list[-1][1]:
             self.scroll += SCROLL_STEP
+            self.side_scroll += SIDE_STEP
             self.draw(cur_height)
     
     def scrollup(self, e):
@@ -77,6 +83,7 @@ class Browser :
         cur_height = self.canvas.winfo_height()
         if self.scroll > 0 :
             self.scroll -= SCROLL_STEP
+            self.side_scroll -= SIDE_STEP
             self.draw(cur_height)
 
     def mousewheel(self, e):
@@ -87,10 +94,12 @@ class Browser :
         if e.num == 5 or e.delta == -120 : 
             if self.scroll + cur_height < self.display_list[-1][1]:
                 self.scroll += SCROLL_STEP
+                self.side_scroll += SIDE_STEP
                 self.draw(cur_height)
         if e.num == 4 or e.delta == 120 : 
             if self.scroll > 0 :
                 self.scroll -= SCROLL_STEP
+                self.side_scroll -= SCROLL_STEP
                 self.draw(cur_height)
 
     def on_configure(self, e):
