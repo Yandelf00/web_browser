@@ -19,13 +19,19 @@ class Browser :
         self.window.bind("<Configure>", self.on_configure)
 
     def load(self, url):
-        if url.scheme in ["http", "https"]:
+        if url.scheme == "about:blank": 
+            self.text= ""
+            self.display_list = layout(self.text)
+
+        elif url.scheme in ["http", "https"]:
             body = url.request()
             if body is not None :
                 self.text = lex(body)
                 self.display_list = layout(self.text)
                 self.draw()
             else : 
+                self.text = ""
+                self.display_list = layout(self.text)
                 print("there is no body to show")
         elif url.scheme in ["view-source:http","view-source:https"]:
             body = url.request()
@@ -52,11 +58,12 @@ class Browser :
         """
         Draws the canvas (what's inside the window)
         """
+        x = 0
         cur_width = self.canvas.winfo_width()
         cur_height =  self.canvas.winfo_height()
         self.canvas.delete("all")
-
-        x = self.display_list[-1][1] - cur_height
+        if self.display_list : 
+            x = self.display_list[-1][1] - cur_height
         fact = x / SIDE_STEP
         y = cur_height-fact
         a = self.canvas.create_rectangle(cur_width-10, self.side_scroll, cur_width, y+self.side_scroll, fill='blue')
@@ -72,7 +79,7 @@ class Browser :
         Handles the scroll down behaviour (with the downside key)
         """
         cur_height = self.canvas.winfo_height()
-        if self.scroll + cur_height < self.display_list[-1][1]:
+        if self.display_list and self.scroll + cur_height < self.display_list[-1][1]:
             self.scroll += SCROLL_STEP
             self.side_scroll += SIDE_STEP
             self.draw(cur_height)
@@ -93,7 +100,7 @@ class Browser :
         """
         cur_height = self.canvas.winfo_height()
         if e.num == 5 or e.delta == -120 : 
-            if self.scroll + cur_height < self.display_list[-1][1]:
+            if self.display_list and self.scroll + cur_height < self.display_list[-1][1]:
                 self.scroll += SCROLL_STEP
                 self.side_scroll += SIDE_STEP
                 self.draw(cur_height)

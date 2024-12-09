@@ -8,12 +8,15 @@ class URL :
     cache = Cache()
 
     def __init__(self, url):
+        if url == "about:blank": 
+            self.scheme = "about:blank"
+            return
         if url[0][:4] == "data" :
             directive = ' '.join(url)
             self.scheme, directive= directive.split(":", 1)
             directive, self.path = directive.split(",", 1)
             return
-            
+          
         schemes = ["http", "https", "file", "view-source:http", "view-source:https"]
         self.scheme, url = url.split("://", 1)
         assert self.scheme in schemes
@@ -39,7 +42,11 @@ class URL :
             type=socket.SOCK_STREAM,
             proto= socket.IPPROTO_TCP
         )
-        s.connect((self.host, self.port))
+        try : 
+            s.connect((self.host, self.port))
+        except : 
+            print("connection didn't work")
+            return
         if self.scheme == "https" or self.scheme == "view-source:https":
             ctx = ssl.create_default_context(cafile=certifi.where())
             s = ctx.wrap_socket(s, server_hostname=self.host)
@@ -96,6 +103,8 @@ class URL :
         while redirects_followed < max_redirects : 
             if self.socket is None : 
                 self.socket = self.connect_socket()
+                if self.socket is None : 
+                    return 
             request = self.request_form(self.path, self.host)
             self.socket.send(request.encode('utf8'))
             response = self.socket.makefile("rb", newline="\r\n")
@@ -113,6 +122,8 @@ class URL :
                     self.socket = self.connect_socket()
                 redirects_followed += 1               
                 continue
+            if status >= 400 and status < 500 : 
+                print("there is an error")
             if response_headers.get('transfer-encoding') == 'chunked':
                 content = self.read_chunked(response)
             else : 
