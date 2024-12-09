@@ -55,6 +55,7 @@ class Browser :
         cur_width = self.canvas.winfo_width()
         cur_height =  self.canvas.winfo_height()
         self.canvas.delete("all")
+
         x = self.display_list[-1][1] - cur_height
         fact = x / SIDE_STEP
         y = cur_height-fact
@@ -99,7 +100,7 @@ class Browser :
         if e.num == 4 or e.delta == 120 : 
             if self.scroll > 0 :
                 self.scroll -= SCROLL_STEP
-                self.side_scroll -= SCROLL_STEP
+                self.side_scroll -= SIDE_STEP 
                 self.draw(cur_height)
 
     def on_configure(self, e):
